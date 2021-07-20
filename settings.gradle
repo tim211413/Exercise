@@ -1,0 +1,8 @@
+rootProject.name = "Exercise"
+include ':app'
+include ':databinding_basic'
+include ':databinding_viewmodel'
+include ':viewmodel'
+include ':add_user_mvc'
+include ':add_user_mvvm'
+include ':livedatatext'

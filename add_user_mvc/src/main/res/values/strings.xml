@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">Add_User_MVC</string>
+    <string name="file_name">"jsonFile.json"</string>
+</resources>
