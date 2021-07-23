@@ -13,7 +13,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.example.add_user_mvp.R;
 import com.example.add_user_mvp.presenter.AddUserPresenter;
 
-public class AddUser extends AppCompatActivity implements AddUserView {
+public class AddUser extends AppCompatActivity {
     public static final String FILENAME = "jsonFile.json";
     EditText et_user_name, et_user_phone;
     Button btn_add;
@@ -37,13 +37,11 @@ public class AddUser extends AppCompatActivity implements AddUserView {
         assert actionBar != null;
         actionBar.setDisplayHomeAsUpEnabled(true);
 
-        addUserPresenter = new AddUserPresenter(this);
-
-        addUserPresenter.onCreate(context);
+        // 讀取資料 並加入 JSONArray
+        addUserPresenter = new AddUserPresenter(context);
     }
 
     // 加入按鈕的監聽器
-    @Override
     public void onClick(View v) {
         String userName = "";
         String userPhone = "";
@@ -52,26 +50,22 @@ public class AddUser extends AppCompatActivity implements AddUserView {
         userPhone = et_user_phone.getText().toString();
 
         addUserPresenter.putUserToFile(userName, userPhone, context);
+        clearWord();
     }
 
     // 清除 EditText 的內容
-    @Override
     public void clearWord() {
         et_user_name.setText("");
         et_user_phone.setText("");
     }
 
-    // 返回鍵的監聽器 (包含將資料寫入)
+    // 返回鍵的監聽器
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == android.R.id.home) {
-            addUserPresenter.back();
+            finish();
         }
         return super.onOptionsItemSelected(item);
     }
 
-    @Override
-    public void back() {
-        finish();
-    }
 }

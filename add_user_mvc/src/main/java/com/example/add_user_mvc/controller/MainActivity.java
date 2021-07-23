@@ -12,7 +12,6 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.add_user_mvc.R;
-import com.example.add_user_mvc.model.MyAdapter;
 import com.example.add_user_mvc.model.User;
 import com.example.add_user_mvc.util.ReadFileInMainActivity;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -48,7 +47,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         try {
-            File f = new File(FILENAME);
+            File f = new File("data/data/com.example.add_user_mvc/jsonFile.json");
             if (f.exists()) {
                 openFileOutput(FILENAME, MODE_APPEND);
                 Log.d("TAG", "this is onResume().openFileOutput()");

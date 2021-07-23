@@ -1,29 +1,33 @@
 package com.example.add_user_mvvm.viewmodel;
 
+import android.content.Context;
+
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
 import com.example.add_user_mvvm.model.User;
+import com.example.add_user_mvvm.model.UserManager;
 
 import java.util.ArrayList;
 
 public class UserArrayListViewModel extends ViewModel {
-    MutableLiveData<ArrayList<User>> userLiveData;
-    ArrayList<User> userArrayList;
+    private MutableLiveData<ArrayList<User>> userLiveData;
+    UserManager userManager = new UserManager();
 
     public UserArrayListViewModel() {
         userLiveData = new MutableLiveData<>();
-        init();
     }
-
     public void init() {
-        userLiveData.setValue(userArrayList);
+        userManager.getUserArrayList();
     }
 
-    public MutableLiveData<ArrayList<User>> getMyUser() {
+    public MutableLiveData<ArrayList<User>> getUserArrayList() {
+        init();
         return userLiveData;
     }
-    public void setMyUser(ArrayList<User> userArrayList) {
-        this.userLiveData.setValue(userArrayList);
+    public void setUserArrayList(Context context) {
+        userManager.setUserArrayList(context);
+        this.userLiveData.setValue(userManager.getUserArrayList());
     }
+
 }

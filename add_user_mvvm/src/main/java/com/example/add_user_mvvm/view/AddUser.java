@@ -1,22 +1,17 @@
-package com.example.add_user_mvvm;
+package com.example.add_user_mvvm.view;
 
 import android.content.Context;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.Toast;
 
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.example.add_user_mvvm.model.User;
-import com.example.add_user_mvvm.util.JsonObjectAdd;
-import com.example.add_user_mvvm.util.UseFile;
-
-import org.json.JSONArray;
+import com.example.add_user_mvvm.R;
+import com.example.add_user_mvvm.viewmodel.UserViewModel;
 
 
 public class AddUser extends AppCompatActivity {
@@ -24,14 +19,10 @@ public class AddUser extends AppCompatActivity {
     EditText et_user_name, et_user_phone;
     Button btn_add;
 
-    JSONArray jsonArrayInWrite;
-
-    User user;
+    UserViewModel userViewModel = new UserViewModel();
 
     Context context;
 
-    JsonObjectAdd jsonObjectAdd;
-    UseFile file = new UseFile();
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -43,16 +34,15 @@ public class AddUser extends AppCompatActivity {
 
         btn_add = (Button) findViewById(R.id.btn_add);
 
-        jsonArrayInWrite = new JSONArray();
-        jsonArrayInWrite = (file.readFile(FILENAME, context));
-        Log.d("TAG2", "jsonArrayInWrite: " + jsonArrayInWrite);
-
         btn_add.setOnClickListener(btnOnClick);
+
+        userViewModel.getUserLiveData(context);
 
         ActionBar actionBar = getSupportActionBar();
         assert actionBar != null;
         actionBar.setDisplayHomeAsUpEnabled(true);
     }
+
 
     // 返回鍵的監聽器 (包含將資料寫入)
     @Override
@@ -73,16 +63,9 @@ public class AddUser extends AppCompatActivity {
             userName = et_user_name.getText().toString();
             userPhone = et_user_phone.getText().toString();
 
-            if (userName.equals("") || userPhone.equals("")) {
-                Toast.makeText(getApplicationContext(), "名稱跟電話都必須輸入！", Toast.LENGTH_SHORT).show();
-            } else {
-                user = new User(userName, userPhone);
-                jsonObjectAdd = new JsonObjectAdd();
-                jsonArrayInWrite.put(jsonObjectAdd.addJsonObject(user.getUserName(), user.getUserPhone()));
-                Log.d("TAG2", jsonArrayInWrite.toString());
-                clearWord();
-                file.writeFile(jsonArrayInWrite.toString(), context);
-            }
+            userViewModel.setUserLiveData(userName, userPhone, context);
+
+            clearWord();
         }
     };
 

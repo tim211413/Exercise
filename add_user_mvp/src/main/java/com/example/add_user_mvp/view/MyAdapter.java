@@ -1,6 +1,5 @@
-package com.example.add_user_mvvm.model;
+package com.example.add_user_mvp.view;
 
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -9,7 +8,8 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.add_user_mvvm.R;
+import com.example.add_user_mvp.R;
+import com.example.add_user_mvp.model.User;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -20,7 +20,20 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
 
     public MyAdapter(ArrayList<User> userArrayList) {
         this.userArrayList = userArrayList;
-        //Log.d("TAG1", userArrayList.toString());
+    }
+
+
+    class ViewHolder extends RecyclerView.ViewHolder {
+        TextView tv_user_name, tv_user_phone;
+
+        public ViewHolder(@NonNull View itemView) {
+            super(itemView);
+            tv_user_name = itemView.findViewById(R.id.tv_user_name);
+            tv_user_phone = itemView.findViewById(R.id.tv_user_phone);
+        }
+    }
+    public void getUserArrayList(ArrayList<User> userArrayList) {
+        this.userArrayList = userArrayList;
     }
 
     @NonNull
@@ -37,7 +50,6 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
         User user = userArrayList.get(position);
 
         holder.tv_user_name.setText(user.getUserName());
-        Log.d("TAG1", user.getUserName());
         holder.tv_user_phone.setText(user.getUserPhone());
     }
 
@@ -46,19 +58,4 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
         return userArrayList.size();
     }
 
-
-    class ViewHolder extends RecyclerView.ViewHolder {
-        TextView tv_user_name, tv_user_phone;
-
-        public ViewHolder(@NonNull View itemView) {
-            super(itemView);
-            tv_user_name = itemView.findViewById(R.id.tv_user_name);
-            tv_user_phone = itemView.findViewById(R.id.tv_user_phone);
-        }
-    }
-
-
-//    public void getArrayList(ArrayList arrayList) {
-//        this.userArrayList = arrayList;
-//    }
 }

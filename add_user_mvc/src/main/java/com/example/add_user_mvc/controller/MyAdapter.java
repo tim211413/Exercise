@@ -1,6 +1,5 @@
-package com.example.add_user_mvp.model;
+package com.example.add_user_mvc.controller;
 
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -9,7 +8,8 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.add_user_mvp.R;
+import com.example.add_user_mvc.R;
+import com.example.add_user_mvc.model.User;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -43,10 +43,8 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
 
     @Override
     public void onBindViewHolder(@NonNull @NotNull MyAdapter.ViewHolder holder, int position) {
-        User user = userArrayList.get(position);
-
-        holder.tv_user_name.setText(user.getUserName());
-        holder.tv_user_phone.setText(user.getUserPhone());
+        holder.tv_user_name.setText(userArrayList.get(position).getUserName());
+        holder.tv_user_phone.setText(userArrayList.get(position).getUserPhone());
     }
 
     @Override

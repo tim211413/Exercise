@@ -17,7 +17,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
-import static com.example.add_user_mvvm.AddUser.FILENAME;
+import static com.example.add_user_mvvm.view.AddUser.FILENAME;
 
 
 public class UseFile {

@@ -21,7 +21,7 @@ import static com.example.add_user_mvp.view.AddUser.FILENAME;
 
 public class UseFile {
     User user;
-    JsonArrayAdd jsonArrayAdd;
+    JsonObjectAdd jsonObjectAdd;
     JSONArray jsonArray = new JSONArray();
     //讀資料
     public JSONArray readFile(String fileName, Context context) {
@@ -44,8 +44,8 @@ public class UseFile {
                         Log.d("TAG", "userPhoneInJson: " + userPhoneInJson);
 
                         user = new User(userNameInJson, userPhoneInJson);
-                        jsonArrayAdd = new JsonArrayAdd();
-                        jsonArray.put(jsonArrayAdd.addJsonArray(user.getUserName(), user.getUserPhone()));
+                        jsonObjectAdd = new JsonObjectAdd();
+                        jsonArray.put(jsonObjectAdd.addJsonObject(user.getUserName(), user.getUserPhone()));
                     }
                 }
             } while (true);
