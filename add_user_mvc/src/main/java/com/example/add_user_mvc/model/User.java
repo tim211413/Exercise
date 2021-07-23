@@ -4,6 +4,10 @@ public class User {
     private String userName;
     private String userPhone;
 
+    public User() {
+
+    }
+
     public User(String userName, String userPhone) {
         this.userName = userName;
         this.userPhone = userPhone;

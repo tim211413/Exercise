@@ -1,5 +1,6 @@
 package com.example.add_user_mvvm.model;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,16 +20,7 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
 
     public MyAdapter(ArrayList<User> userArrayList) {
         this.userArrayList = userArrayList;
-    }
-
-    class ViewHolder extends RecyclerView.ViewHolder {
-        TextView tv_user_name, tv_user_phone;
-
-        public ViewHolder(@NonNull View itemView) {
-            super(itemView);
-            tv_user_name = itemView.findViewById(R.id.tv_user_name);
-            tv_user_phone = itemView.findViewById(R.id.tv_user_phone);
-        }
+        //Log.d("TAG1", userArrayList.toString());
     }
 
     @NonNull
@@ -42,8 +34,11 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
 
     @Override
     public void onBindViewHolder(@NonNull @NotNull MyAdapter.ViewHolder holder, int position) {
-        holder.tv_user_name.setText(userArrayList.get(position).getUserName());
-        holder.tv_user_phone.setText(userArrayList.get(position).getUserPhone());
+        User user = userArrayList.get(position);
+
+        holder.tv_user_name.setText(user.getUserName());
+        Log.d("TAG1", user.getUserName());
+        holder.tv_user_phone.setText(user.getUserPhone());
     }
 
     @Override
@@ -51,4 +46,19 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
         return userArrayList.size();
     }
 
+
+    class ViewHolder extends RecyclerView.ViewHolder {
+        TextView tv_user_name, tv_user_phone;
+
+        public ViewHolder(@NonNull View itemView) {
+            super(itemView);
+            tv_user_name = itemView.findViewById(R.id.tv_user_name);
+            tv_user_phone = itemView.findViewById(R.id.tv_user_phone);
+        }
+    }
+
+
+//    public void getArrayList(ArrayList arrayList) {
+//        this.userArrayList = arrayList;
+//    }
 }

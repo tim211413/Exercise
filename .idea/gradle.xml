@@ -11,11 +11,13 @@
           <set>
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/add_user_mvc" />
+            <option value="$PROJECT_DIR$/add_user_mvp" />
             <option value="$PROJECT_DIR$/add_user_mvvm" />
             <option value="$PROJECT_DIR$/app" />
             <option value="$PROJECT_DIR$/databinding_basic" />
             <option value="$PROJECT_DIR$/databinding_viewmodel" />
             <option value="$PROJECT_DIR$/livedatatext" />
+            <option value="$PROJECT_DIR$/mvp_text" />
             <option value="$PROJECT_DIR$/viewmodel" />
           </set>
         </option>

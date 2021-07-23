@@ -1,5 +1,6 @@
 package com.example.add_user_mvvm;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -14,38 +15,35 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.add_user_mvvm.model.MyAdapter;
 import com.example.add_user_mvvm.model.User;
-import com.example.add_user_mvvm.viewmodel.UserViewModel;
+import com.example.add_user_mvvm.util.ReadFileInMainActivity;
+import com.example.add_user_mvvm.viewmodel.UserArrayListViewModel;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
     FloatingActionButton fab;
 
-    private UserViewModel userViewModel;
-
-    User user;
+    ReadFileInMainActivity readFileInMainActivity = new ReadFileInMainActivity();
 
     ArrayList<User> userArrayList = new ArrayList<>();
+
+    private static final String FILENAME = "jsonFile.json";
+
+    Context context;
 
     RecyclerView recyclerView;
     MyAdapter myAdapter;
 
-    private static final String FILENAME = "jsonFile.json";
+    private UserArrayListViewModel userArrayListViewModel;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        context = getApplicationContext();
 
         // FAB
         fab = findViewById(R.id.fab);
@@ -54,40 +52,50 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onResume() {
-        recyclerView = findViewById(R.id.recyclerView);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        recyclerView.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
-        myAdapter = new MyAdapter(userArrayList);
-        recyclerView.setAdapter(myAdapter);
-
-
-        userViewModel = new ViewModelProvider(this).get(UserViewModel.class);
-
-        userViewModel.getMyUser().observe(this, new Observer<User>() {
-            @Override
-            public void onChanged(User user) {
-                recyclerView.setAdapter(myAdapter);
-            }
-        });
-
         try {
             File f = new File(FILENAME);
             if (f.exists()) {
                 openFileOutput(FILENAME, MODE_APPEND);
                 Log.d("TAG", "this is onResume().openFileOutput()");
             } else {
-                readFile(FILENAME);
+                userArrayList = readFileInMainActivity.readFile(FILENAME, context);
                 Log.d("TAG", "this is onResume().readFile()");
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
-        //readFile(FILENAME);
         //myAdapter.notifyDataSetChanged();
         Log.d("TAG", "this is onResume()");
+
+        recyclerView = findViewById(R.id.recyclerView);
+
+        userArrayListViewModel = new ViewModelProvider(this).get(UserArrayListViewModel.class);
+        userArrayListViewModel.getMyUser().observe(this, userListUpdateObserver);
+
+        myAdapter.notifyDataSetChanged();
+
         super.onResume();
     }
 
+
+    Observer<ArrayList<User>> userListUpdateObserver = new Observer<ArrayList<User>>() {
+
+        @Override
+        public void onChanged(ArrayList<User> userArrayList) {
+            userArrayList = getUserArrayList();
+
+            myAdapter = new MyAdapter(userArrayList);
+            recyclerView.setLayoutManager(new LinearLayoutManager(context));
+            recyclerView.addItemDecoration(new DividerItemDecoration(context, DividerItemDecoration.VERTICAL));
+
+            //myAdapter.getArrayList(userArrayList);
+            recyclerView.setAdapter(myAdapter);
+        }
+    };
+
+    public ArrayList<User> getUserArrayList() {
+        return userArrayList;
+    }
 
     private View.OnClickListener fabOnClick = new View.OnClickListener() {
         @Override
@@ -96,46 +104,5 @@ public class MainActivity extends AppCompatActivity {
             startActivity(intent);
         }
     };
-
-
-    //讀資料
-    public void readFile(String fileName) {
-        userArrayList.clear();
-        try (FileInputStream fin = openFileInput(fileName);
-             BufferedInputStream bufferedInputStream = new BufferedInputStream(fin)){
-
-            byte[] buffer = new byte[1024];
-            do {
-                int flag = bufferedInputStream.read(buffer);
-                if (flag == -1) {
-                    break;
-                } else {
-                    JSONArray jsonArrayInRead = new JSONArray(new String(buffer, 0, flag));
-                    Log.d("TAG", "jsonArray: " + jsonArrayInRead.toString());
-                    Log.d("TAG", "jsonArray: " + jsonArrayInRead.length());
-                    for (int i = 0; i < jsonArrayInRead.length(); i++) {
-                        JSONObject jsonObjectInRead = jsonArrayInRead.getJSONObject(i);
-                        String userNameInJson = jsonObjectInRead.getString("userName");
-                        String userPhoneInJson = jsonObjectInRead.getString("userPhone");
-
-                        Log.d("TAG", "userNameInJson: " + userNameInJson);
-                        Log.d("TAG", "userPhoneInJson: " + userPhoneInJson);
-
-                        user = new User(userNameInJson, userPhoneInJson);
-
-                        userArrayList.add(user);
-
-                        Log.d("TAG", "arrayList.toString: " + userArrayList.toString());
-                    }
-                }
-            } while (true);
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (JSONException jsonException) {
-            jsonException.printStackTrace();
-        }
-    }
 
 }

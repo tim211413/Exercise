@@ -1,12 +1,28 @@
-package com.example.add_user_mvvm.model.util;
+package com.example.add_user_mvc.util;
 
-/*
-public class FileRead {
+import android.content.Context;
+import android.util.Log;
+
+import com.example.add_user_mvc.model.User;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.BufferedInputStream;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.ArrayList;
+
+public class ReadFileInMainActivity {
     User user;
-    //讀資料
-    public void readFile(String fileName) {
+    ArrayList<User> userArrayList = new ArrayList<>();
 
-        try (FileInputStream fin = openFileInput(fileName);
+    //讀資料
+    public ArrayList readFile(String fileName, Context context) {
+
+        try (FileInputStream fin = context.openFileInput(fileName);
              BufferedInputStream bufferedInputStream = new BufferedInputStream(fin)) {
             byte[] buffer = new byte[1024];
             do {
@@ -14,6 +30,7 @@ public class FileRead {
                 if (flag == -1) {
                     break;
                 } else {
+                    userArrayList.clear();
                     JSONArray jsonArrayInRead = new JSONArray(new String(buffer, 0, flag));
                     for (int i = 0; i < jsonArrayInRead.length(); i++) {
                         JSONObject jsonObjectInRead = jsonArrayInRead.getJSONObject(i);
@@ -24,11 +41,8 @@ public class FileRead {
                         Log.d("TAG", "userPhoneInJson: " + userPhoneInJson);
 
                         user = new User(userNameInJson, userPhoneInJson);
-
-                        addJsonArray(user.getUserName(), user.getUserPhone());
-                        //count = jsonArrayInRead.length();
+                        userArrayList.add(user);
                     }
-                    //Log.d("TAG", "jsonArrayInRead.length(): " + count);
                 }
             } while (true);
         } catch (FileNotFoundException e) {
@@ -38,5 +52,6 @@ public class FileRead {
         } catch (JSONException jsonException) {
             jsonException.printStackTrace();
         }
+        return userArrayList;
     }
-}*/
+}
