@@ -16,12 +16,21 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
+
 public class MyAdapter extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
+
     private ArrayList<User> userArrayList;
 
     public MyAdapter(ArrayList<User> userArrayList) {
         this.userArrayList = userArrayList;
-        //Log.d("TAG1", userArrayList.toString());
+        Log.d("TAG5", "getUserArrayList in MyAdapter: " + userArrayList.toString());
+    }
+
+    public void setUserArrayList(ArrayList<User> userArrayList) {
+        this.userArrayList = userArrayList;
+        Log.d("TAG5", "getUserArrayList in setUserArrayList: " + userArrayList.toString());
     }
 
     @NonNull
@@ -29,7 +38,6 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
     @Override
     public MyAdapter.ViewHolder onCreateViewHolder(@NonNull @NotNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.recyclerview_main, parent, false);
-
         return new ViewHolder(view);
     }
 
@@ -49,17 +57,17 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
 
 
     class ViewHolder extends RecyclerView.ViewHolder {
-        TextView tv_user_name, tv_user_phone;
+        @BindView(R.id.tv_user_name) TextView tv_user_name;
+        @BindView(R.id.tv_user_phone) TextView tv_user_phone;
+//        TextView tv_user_name;
+//        TextView tv_user_phone;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
-            tv_user_name = itemView.findViewById(R.id.tv_user_name);
-            tv_user_phone = itemView.findViewById(R.id.tv_user_phone);
+            ButterKnife.bind(this, itemView);
+//            tv_user_name = itemView.findViewById(R.id.tv_user_name);
+//            tv_user_phone = itemView.findViewById(R.id.tv_user_phone);
         }
     }
 
-
-//    public void getArrayList(ArrayList arrayList) {
-//        this.userArrayList = arrayList;
-//    }
 }

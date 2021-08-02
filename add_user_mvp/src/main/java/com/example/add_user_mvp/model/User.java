@@ -27,9 +27,6 @@ public class User {
 
     @Override
     public String toString() {
-        return "{" +
-                "\"userName\":" + "\"" + userName + "\"" +
-                ", \"userPhone\":" + "\"" + userPhone + "\"" +
-                "}";
+        return "{\"userName\":\"" + userName + "\",\"userPhone\":\"" + userPhone + "\"}";
     }
 }

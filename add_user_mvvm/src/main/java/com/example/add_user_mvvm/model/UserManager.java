@@ -2,68 +2,68 @@ package com.example.add_user_mvvm.model;
 
 import android.content.Context;
 import android.util.Log;
-import android.widget.Toast;
 
-import com.example.add_user_mvvm.util.JsonObjectAdd;
-import com.example.add_user_mvvm.util.ReadFileInMainActivity;
+import com.example.add_user_mvvm.util.MainApp;
 import com.example.add_user_mvvm.util.UseFile;
-
-import org.json.JSONArray;
+import com.google.gson.Gson;
 
 import java.io.File;
 import java.util.ArrayList;
 
+import javax.inject.Inject;
+
 import static com.example.add_user_mvvm.view.AddUser.FILENAME;
 
 public class UserManager {
-    private ArrayList<User> userArrayList;
+
+    @Inject
+    ArrayList<User> userArrayList;
+
+    @Inject
+    Gson gson;
+
+    @Inject
+    UseFile file;
+
     User user;
 
-    ReadFileInMainActivity readFileInMainActivity = new ReadFileInMainActivity();
+    //ReadFileInMainActivity readFileInMainActivity = new ReadFileInMainActivity();
 
-    JSONArray jsonArrayInWrite;
 
-    JsonObjectAdd jsonObjectAdd;
-    UseFile file = new UseFile();
-
-    public ArrayList<User> getUserArrayList() {
-        return userArrayList;
+    public UserManager(Context context) {
+        MainApp.mainComponent.inject(this);
+        loadData(context);
     }
 
-    public void setUserArrayList(Context context) {
-
+    public ArrayList<User> getUserArrayList(Context context) {
+        userArrayList.clear();
         try {
             File f = new File(FILENAME);
             if (f.exists()) {
                 //openFileOutput(FILENAME, MODE_APPEND);
                 Log.d("TAG", "this is onResume().openFileOutput()");
             } else {
-                userArrayList = readFileInMainActivity.readFile(FILENAME, context);
-                Log.d("TAG3", "Presenter: " + userArrayList.toString());
+                userArrayList = file.readFile(FILENAME, context);
+
+                Log.d("TAG4", "Presenter: " + userArrayList.toString());
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
+        return userArrayList;
     }
 
     public void loadData(Context context) {
-        jsonArrayInWrite = new JSONArray();
-        jsonArrayInWrite = (file.readFile(FILENAME, context));
-        Log.d("TAG2", "jsonArrayInWrite: " + jsonArrayInWrite);
+        userArrayList.clear();
+        userArrayList = file.readFile(FILENAME, context);
+        Log.d("TAG2", "jsonArrayInWrite: " + userArrayList);
     }
 
     public void updateData(String name, String phone, Context context) {
+        user = new User(name, phone);
+        userArrayList.add(user);
+        String jsonString = gson.toJson(userArrayList);
 
-        if (name.equals("") || phone.equals("")) {
-            Toast.makeText(context, "名稱跟電話都必須輸入！", Toast.LENGTH_SHORT).show();
-        } else {
-            user = new User(name, phone);
-
-            jsonObjectAdd = new JsonObjectAdd();
-
-            jsonArrayInWrite.put(jsonObjectAdd.addJsonObject(user.getUserName(), user.getUserPhone()));
-            Log.d("TAG2", jsonArrayInWrite.toString());
-            file.writeFile(jsonArrayInWrite.toString(), context);
-        }
+        file.writeFile(jsonString, context);
     }
 }

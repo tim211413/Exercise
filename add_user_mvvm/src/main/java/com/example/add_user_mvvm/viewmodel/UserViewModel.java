@@ -2,24 +2,19 @@ package com.example.add_user_mvvm.viewmodel;
 
 import android.content.Context;
 
-import androidx.lifecycle.MutableLiveData;
-
-import com.example.add_user_mvvm.model.User;
 import com.example.add_user_mvvm.model.UserManager;
+import com.example.add_user_mvvm.util.MainApp;
+
+import javax.inject.Inject;
 
 public class UserViewModel {
-    private MutableLiveData<User> userLiveData;
-    UserManager userManager = new UserManager();
 
-    public UserViewModel() {
+    @Inject
+    UserManager userManager;
 
-    }
-    public UserViewModel(MutableLiveData<User> userLiveData) {
-        this.userLiveData = userLiveData;
-    }
-
-    public void getUserLiveData(Context context) {
-        userManager.loadData(context);
+    public UserViewModel(Context context) {
+        //userManager = new UserManager(context);
+        MainApp.mainComponent.inject(this);
     }
 
     public void setUserLiveData(String name, String phone, Context context) {

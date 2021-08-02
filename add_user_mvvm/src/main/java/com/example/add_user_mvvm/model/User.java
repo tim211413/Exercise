@@ -1,8 +1,13 @@
 package com.example.add_user_mvvm.model;
 
+
 public class User {
     private String userName;
     private String userPhone;
+
+    public User() {
+
+    }
 
     public User(String userName, String userPhone) {
         this.userName = userName;
@@ -23,5 +28,10 @@ public class User {
 
     public void setUserPhone(String userPhone) {
         this.userPhone = userPhone;
+    }
+
+    @Override
+    public String toString() {
+        return "{\"userName\":\"" + userName + "\",\"userPhone\":\"" + userPhone + "\"}";
     }
 }

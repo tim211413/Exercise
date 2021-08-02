@@ -29,6 +29,14 @@ android {
 }
 
 dependencies {
+    // ---- Dagger ------------------------------------------------
+    implementation 'com.google.dagger:dagger:2.38'
+    annotationProcessor 'com.google.dagger:dagger-compiler:2.38'
+
+
+    // ---- Gson --------------------------------------------------
+    implementation 'com.google.code.gson:gson:2.8.6'//使用GSON,來源->
+
     //noinspection GradleCompatible
     implementation 'androidx.recyclerview:recyclerview:1.0.0'
     //noinspection GradleCompatible

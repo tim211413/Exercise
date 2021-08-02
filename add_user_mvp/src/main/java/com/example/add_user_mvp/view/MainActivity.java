@@ -14,29 +14,38 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.add_user_mvp.R;
 import com.example.add_user_mvp.model.User;
 import com.example.add_user_mvp.presenter.MainActivityPresenter;
+import com.example.add_user_mvp.util.MainApplication;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
 
-public class MainActivity extends AppCompatActivity implements MainView{
+import javax.inject.Inject;
+
+public class MainActivity extends AppCompatActivity implements MainView {
     FloatingActionButton fab;
 
     RecyclerView recyclerView;
     MyAdapter myAdapter;
 
-    MainActivityPresenter mainPresenter = new MainActivityPresenter(this);
+    MainActivityPresenter mainPresenter;
 
+    @Inject
     Context context;
-    ArrayList<User> userArrayList = new ArrayList<>();
+
+    @Inject
+    ArrayList<User> userArrayList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        context = getApplicationContext();
+        //context = getApplicationContext();
+        MainApplication.mainComponent.inject(this);
 
         // FAB
         fab = findViewById(R.id.fab);
+
+        mainPresenter = new MainActivityPresenter(this);
 
         // RecyclerView
         recyclerView = findViewById(R.id.recyclerView);
@@ -48,23 +57,22 @@ public class MainActivity extends AppCompatActivity implements MainView{
 
     @Override
     protected void onResume() {
-        //Log.d("TAG3", mainPresenter.getUserArrayList(FILENAME, context).toString());
-        mainPresenter.setUserArrayList();
+        mainPresenter.refresh(context);
         super.onResume();
-    }
-    // 前往新增使用者按鈕
-    public void fabOnClick(View view) {
-        Intent intent = new Intent(MainActivity.this, AddUser.class);
-        startActivity(intent);
     }
 
     // 重新獲得 userArrayList
     @Override
-    public void reFresh() {
-        userArrayList = mainPresenter.getUserArrayList();
-        myAdapter.getUserArrayList(userArrayList);
+    public void reFresh(ArrayList<User> userArrayList) {
+        myAdapter.setUserArrayList(userArrayList);
         myAdapter.notifyDataSetChanged();
-        Log.d("TAG3", "userArrayList: " + userArrayList.toString());
+        Log.d("TAG4", "notifyDataSetChanged, userArrayList: " + userArrayList.toString());
+    }
+
+    // 前往新增使用者畫面的按鈕
+    public void fabOnClick(View view) {
+        Intent intent = new Intent(MainActivity.this, AddUser.class);
+        startActivity(intent);
     }
 
 }

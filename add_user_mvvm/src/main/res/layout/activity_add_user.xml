@@ -36,6 +36,7 @@
 
     <Button
         android:id="@+id/btn_add"
+        android:onClick="onClick"
         android:text="加入"
         android:textSize="25dp"
         android:padding="10dp"

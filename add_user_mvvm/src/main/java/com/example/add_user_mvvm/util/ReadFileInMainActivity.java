@@ -1,7 +1,6 @@
 package com.example.add_user_mvvm.util;
 
 import android.content.Context;
-import android.util.Log;
 
 import com.example.add_user_mvvm.model.User;
 
@@ -37,8 +36,8 @@ public class ReadFileInMainActivity {
                         String userNameInJson = jsonObjectInRead.getString("userName");
                         String userPhoneInJson = jsonObjectInRead.getString("userPhone");
 
-                        Log.d("TAG", "userNameInJson: " + userNameInJson);
-                        Log.d("TAG", "userPhoneInJson: " + userPhoneInJson);
+//                        Log.d("TAG", "userNameInJson: " + userNameInJson);
+//                        Log.d("TAG", "userPhoneInJson: " + userPhoneInJson);
 
                         user = new User(userNameInJson, userPhoneInJson);
                         userArrayList.add(user);

@@ -1,5 +1,6 @@
 package com.example.add_user_mvp.view;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,12 +17,15 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 
 public class MyAdapter extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
-    private ArrayList<User> userArrayList;
+    private ArrayList<User> userArrayList = new ArrayList<>();
 
     public MyAdapter(ArrayList<User> userArrayList) {
         this.userArrayList = userArrayList;
     }
 
+//    public MyAdapter() {
+//        Log.d("TAG4", "onCreate, MyAdapter()");
+//    }
 
     class ViewHolder extends RecyclerView.ViewHolder {
         TextView tv_user_name, tv_user_phone;
@@ -32,8 +36,10 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
             tv_user_phone = itemView.findViewById(R.id.tv_user_phone);
         }
     }
-    public void getUserArrayList(ArrayList<User> userArrayList) {
+
+    public void setUserArrayList(ArrayList<User> userArrayList) {
         this.userArrayList = userArrayList;
+        Log.d("TAG4", "getUserArrayList: " + userArrayList.toString());
     }
 
     @NonNull

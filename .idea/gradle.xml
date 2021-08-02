@@ -18,6 +18,10 @@
             <option value="$PROJECT_DIR$/databinding_viewmodel" />
             <option value="$PROJECT_DIR$/livedatatext" />
             <option value="$PROJECT_DIR$/mvp_text" />
+            <option value="$PROJECT_DIR$/okhttptext" />
+            <option value="$PROJECT_DIR$/retrofittext" />
+            <option value="$PROJECT_DIR$/rxjava_okhttp_retrofit_text" />
+            <option value="$PROJECT_DIR$/rxjavatext" />
             <option value="$PROJECT_DIR$/viewmodel" />
           </set>
         </option>

@@ -2,13 +2,10 @@ package com.example.add_user_mvvm.util;
 
 
 import android.content.Context;
-import android.util.Log;
 
 import com.example.add_user_mvvm.model.User;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -16,16 +13,27 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.inject.Inject;
 
 import static com.example.add_user_mvvm.view.AddUser.FILENAME;
 
-
 public class UseFile {
-    User user;
-    JsonObjectAdd jsonObjectAdd;
-    JSONArray jsonArray = new JSONArray();
+
+    public UseFile() {
+        MainApp.mainComponent.inject(this);
+    }
+
+    @Inject
+    ArrayList<User> users;
+
+    @Inject
+    Gson gson;
+
     //讀資料
-    public JSONArray readFile(String fileName, Context context) {
+    public ArrayList readFile(String fileName, Context context) {
 
         try (FileInputStream fin = context.openFileInput(fileName);
              BufferedInputStream bufferedInputStream = new BufferedInputStream(fin)) {
@@ -35,30 +43,17 @@ public class UseFile {
                 if (flag == -1) {
                     break;
                 } else {
-                    JSONArray jsonArrayInRead = new JSONArray(new String(buffer, 0, flag));
-                    for (int i = 0; i < jsonArrayInRead.length(); i++) {
-                        JSONObject jsonObjectInRead = jsonArrayInRead.getJSONObject(i);
-                        String userNameInJson = jsonObjectInRead.getString("userName");
-                        String userPhoneInJson = jsonObjectInRead.getString("userPhone");
-
-                        Log.d("TAG", "userNameInJson: " + userNameInJson);
-                        Log.d("TAG", "userPhoneInJson: " + userPhoneInJson);
-
-                        user = new User(userNameInJson, userPhoneInJson);
-                        jsonObjectAdd = new JsonObjectAdd();
-                        jsonArray.put(jsonObjectAdd.addJsonObject(user.getUserName(), user.getUserPhone()));
-                    }
+                    users = gson.fromJson(new String(buffer, 0, flag), new TypeToken<List<User>>() {}.getType());
                 }
             } while (true);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
-        } catch (JSONException jsonException) {
-            jsonException.printStackTrace();
         }
-        return jsonArray;
-    }//寫資料
+        return users;
+    }
+    //寫資料
     public void writeFile(String writer, Context context) {
         try (FileOutputStream fileOutputStream = context.openFileOutput(FILENAME, context.MODE_PRIVATE)) {
             try (BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(fileOutputStream)) {

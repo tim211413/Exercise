@@ -29,6 +29,22 @@ android {
 }
 
 dependencies {
+    // ---- Dagger ------------------------------------------------
+    implementation 'com.google.dagger:dagger:2.38'
+    annotationProcessor 'com.google.dagger:dagger-compiler:2.38'
+
+//    implementation 'com.google.dagger:dagger-android:2.38'
+//    implementation 'com.google.dagger:dagger-android-support:2.38' // if you use the support libraries
+//    annotationProcessor 'com.google.dagger:dagger-android-processor:2.20'
+//    annotationProcessor 'com.google.dagger:dagger-compiler:2.38'
+
+
+    // ---- ButterKnife -------------------------------------------
+    implementation 'com.jakewharton:butterknife:10.2.3'
+    annotationProcessor 'com.jakewharton:butterknife-compiler:10.2.3'
+
+    // ---- Gson --------------------------------------------------
+    implementation 'com.google.code.gson:gson:2.8.6'//使用GSON,來源->
 
     //noinspection GradleCompatible
     implementation 'androidx.recyclerview:recyclerview:1.0.0'

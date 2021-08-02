@@ -1,13 +1,12 @@
 package com.example.add_user_mvp.util;
 
 import android.content.Context;
-import android.util.Log;
 
 import com.example.add_user_mvp.model.User;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParser;
 
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;
@@ -31,18 +30,11 @@ public class ReadFileInMainActivity {
                     break;
                 } else {
                     userArrayList.clear();
-                    JSONArray jsonArrayInRead = new JSONArray(new String(buffer, 0, flag));
-                    for (int i = 0; i < jsonArrayInRead.length(); i++) {
-                        JSONObject jsonObjectInRead = jsonArrayInRead.getJSONObject(i);
-                        String userNameInJson = jsonObjectInRead.getString("userName");
-                        String userPhoneInJson = jsonObjectInRead.getString("userPhone");
-
-                        Log.d("TAG", "userNameInJson: " + userNameInJson);
-                        Log.d("TAG", "userPhoneInJson: " + userPhoneInJson);
-
-                        user = new User(userNameInJson, userPhoneInJson);
+                    JsonArray jsonArray = JsonParser.parseString(new String(buffer, 0, flag)).getAsJsonArray();
+                    Gson gson = new Gson();
+                    for (JsonElement userArray : jsonArray) {
+                        user = gson.fromJson(userArray, User.class);
                         userArrayList.add(user);
-                        //Log.d("TAG3", userArrayList.toString());
                     }
                 }
             } while (true);
@@ -50,8 +42,6 @@ public class ReadFileInMainActivity {
             e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
-        } catch (JSONException jsonException) {
-            jsonException.printStackTrace();
         }
         return userArrayList;
     }
