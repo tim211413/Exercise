@@ -4,6 +4,7 @@ import android.Manifest;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -25,7 +26,6 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import io.reactivex.Observer;
-import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 import okhttp3.MediaType;
@@ -40,24 +40,31 @@ public class MainActivity extends AppCompatActivity {
     Button btn_request;
     @BindView(R.id.tv_response)
     TextView tv_response;
-    @BindView(R.id.tv_status)
-    TextView tv_status;
+    @BindView(R.id.tv_detail)
+    TextView tv_detail;
     @BindView(R.id.et_fileName)
     EditText et_fileName;
+    @BindView(R.id.btn_download)
+    Button btn_download;
 
     Gson gson = new Gson();
     FileInfo fileInfo;
     UploadInfo uploadInfo;
     ResponseInfo responseInfo = new ResponseInfo();
 
-    SHA256 sha256 = new SHA256();
+    SHA256 sha256;
     String checksum;
-    int uploadStatus = 1;
-    int count = 0;
+    int uploadStatus;
+    int count;
     int file_id;
     long fileSize;
     int uploadMaximum;
+    int times;
     String fileName;
+    String showString = "";
+    String responseConnectionBodyString = "";
+    String responseUploadBodyString = "";
+    Boolean isFinish;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,9 +73,11 @@ public class MainActivity extends AppCompatActivity {
         ButterKnife.bind(this);
 
         check();
+        tv_response.setMovementMethod(new ScrollingMovementMethod());
 
         fileService = RetrofitManager.getInstance().create(FileService.class);
     }
+
     public void check() {
         if (Build.VERSION.SDK_INT >= 23) {
             int REQUEST_CODE_PERMISSION_STORAGE = 100;
@@ -89,6 +98,9 @@ public class MainActivity extends AppCompatActivity {
 
     @OnClick(R.id.btn_request)
     public void requestClick(View view) {
+        times = 0;
+        isFinish = false;
+
         fileName = et_fileName.getText().toString();
 
         readFileFirst(fileName);
@@ -97,29 +109,20 @@ public class MainActivity extends AppCompatActivity {
 
         fileService.connect(fileInfo)
                 .observeOn(Schedulers.io())
-                .subscribeOn(AndroidSchedulers.mainThread())
+                .subscribeOn(Schedulers.newThread())
                 .subscribe(observerFirst);
 
-        Log.d("TAG", "" + file_id + "/" + uploadMaximum);
+        et_fileName.setText("");
 
-
-        Thread thread = new Thread();
-        try {
-            thread.sleep(5*1000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-        uploadStatus = 1;
-
-        readFile(fileName);
+        tv_detail.setText(fileName + "/" + fileSize + "\n" + checksum);
     }
 
     public void readFileFirst(String fileName) {
+        sha256 = new SHA256();
 
         try (FileInputStream fin = openFileInput(fileName);
              BufferedInputStream bufferedInputStream = new BufferedInputStream(fin)) {
-            byte[] buffer = new byte[1024*1024];
+            byte[] buffer = new byte[1024 * 1024];
 
             do {
                 int flag = bufferedInputStream.read(buffer);
@@ -130,9 +133,9 @@ public class MainActivity extends AppCompatActivity {
                 }
             } while (true);
             checksum = sha256.shaEncryptFirst();
-            Log.d("TAG", "checksum in observable" + checksum);
+            Log.d("TAG", "checksum in read " + checksum);
             fileSize = sha256.getbtSize();
-            Log.d("TAG", "fileSize in observable" + fileSize);
+            Log.d("TAG", "fileSize in read " + fileSize);
 
         } catch (FileNotFoundException e) {
             e.printStackTrace();
@@ -150,15 +153,26 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onNext(@NotNull ResponseBody responseBody) {
             try {
-                tv_status.setText(responseBody.string());
-                //new Gson().fromJson(responseBody.string(), ResponseInfo.class);
+                responseConnectionBodyString = responseBody.string();
+                Log.d("TAG", responseConnectionBodyString);
             } catch (IOException e) {
                 e.printStackTrace();
             }
-//            file_id = responseInfo.getFile_id();
-//            uploadMaximum = responseInfo.getUpload_maximum();
+            showString = "connection: " + responseConnectionBodyString + "\n";
+
+            responseInfo = new Gson().fromJson(responseConnectionBodyString, ResponseInfo.class);
+
+            file_id = responseInfo.getFile_id();
+            uploadMaximum = responseInfo.getUpload_maximum();
+
             Log.d("TAG", "file_id: " + file_id);
             Log.d("TAG", "uploadMaximum: " + uploadMaximum);
+
+            if (responseInfo.getStatus() == 0) {
+                uploadStatus = 1;
+                count = 0;
+                readFile(fileName);
+            }
         }
 
         @Override
@@ -173,38 +187,44 @@ public class MainActivity extends AppCompatActivity {
     };
 
     public void readFile(String fileName) {
-
         try (FileInputStream fin = openFileInput(fileName);
              BufferedInputStream bufferedInputStream = new BufferedInputStream(fin)) {
             byte[] buffer = new byte[uploadMaximum];
+            Log.d("TAG", "uploadMaximum: " + uploadMaximum);
             do {
                 int flag = bufferedInputStream.read(buffer);
                 if (flag == -1) {
                     break;
                 } else {
                     checksum = sha256.shaEncrypt(new String(buffer, 0, flag));
-                    Log.d("TAG", "checkSum: " + checksum);
-                    Log.d("TAG", "read word: " + new String(buffer, 0, flag));
-                    ++file_id;
+//                    Log.d("TAG", "checkSum: " + checksum);
+//                    Log.d("TAG", "read word: " + new String(buffer, 0, flag));
                     ++count;
+                    Log.d("TAG", "count = " + count);
 
-                    if ((fileSize / uploadMaximum) == count) {
+                    if ((fileSize / uploadMaximum) >= count) {
+                        uploadStatus = 1;
+                    } else {
                         uploadStatus = 2;
                     }
+                    //Log.d("TAG", "(fileSize / uploadMaximum) = " + (int)(fileSize / uploadMaximum));
 
                     uploadInfo = new UploadInfo(file_id, uploadStatus, checksum);
 
                     RequestBody requestFile = RequestBody.create(MediaType.parse("application/json"), gson.toJson(uploadInfo));
-
                     RequestBody requestBody = RequestBody.create(MediaType.parse("text/plain"), new String(buffer, 0, flag));
 
-                    fileService.uploadFile(requestFile, requestBody)
-                            .observeOn(AndroidSchedulers.mainThread())
-                            .subscribeOn(Schedulers.io())
-                            .subscribe(observer);
 
-                    Thread thread = new Thread();
-                    thread.sleep(2000);
+                    while (isFinish) {
+                        Log.d("TAG", "while isFinish: " + isFinish);
+                        if (isFinish) {
+                            Log.d("TAG", "if in while isFinish1: " + isFinish);
+
+                            doSomething(requestFile, requestBody);
+
+                            Log.d("TAG", "if in while isFinish2: " + isFinish);
+                        }
+                    }
 
                 }
             } while (true);
@@ -212,36 +232,59 @@ public class MainActivity extends AppCompatActivity {
             e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
         }
     }
 
-    Observer observer = new Observer<ResponseBody>() {
-        @Override
-        public void onSubscribe(@NotNull Disposable d) {
-            Log.d("TAG", "onSubscribe");
-        }
+    public void doSomething(RequestBody requestFile, RequestBody requestBody) {
 
-        @Override
-        public void onNext(@NotNull ResponseBody requestBody) {
-            try {
-                tv_response.setText(requestBody.string());
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            Log.d("TAG", "onNext");
-        }
+        fileService.uploadFile(requestFile, requestBody)
+                .observeOn(Schedulers.io())
+                .subscribeOn(Schedulers.newThread())
+                .subscribe(new Observer<ResponseBody>() {
+                    @Override
+                    public void onSubscribe(@NotNull Disposable d) {
+                        isFinish = false;
+                        Log.d("TAG", "onSubscribe " + isFinish);
+                    }
 
-        @Override
-        public void onError(@NotNull Throwable e) {
-            Log.d("TAG", "onError: " + e);
-        }
+                    @Override
+                    public void onNext(@NotNull ResponseBody responseBody) {
+                        ++times;
+                        try {
+                            responseUploadBodyString = responseBody.string();
+                            UploadStatus uploadStatus = new Gson().fromJson(responseUploadBodyString, UploadStatus.class);
+                            Log.d("TAG", "responseUploadBodyString: " + responseUploadBodyString);
 
-        @Override
-        public void onComplete() {
-            Log.d("TAG", "onComplete");
-        }
-    };
+                            if (uploadStatus.getStatus() == 0) {
+                                isFinish = true;
+                            }
+                            showString += times + ".upload: " + responseUploadBodyString + "\n";
+                        } catch (IOException e) {
+                            isFinish = false;
+                            e.printStackTrace();
+                        }
+                        Log.d("TAG", "onNext " + isFinish);
+                    }
 
+                    @Override
+                    public void onError(@NotNull Throwable e) {
+                        isFinish = false;
+                        Log.d("TAG", "onError : " + e + isFinish);
+                    }
+
+                    @Override
+                    public void onComplete() {
+                        runOnUiThread(() -> tv_response.setText(showString));
+                        Log.d("TAG", "onComplete " + isFinish);
+                    }
+                });
+    }
+
+    @OnClick(R.id.btn_download)
+    public void downloadClick(View view) {
+        fileService.downloadConnection();
+        fileName = et_fileName.getText().toString();
+        String fileUrl = fileName;
+        fileService.download("upload\\/1\\/" + fileUrl);
+    }
 }

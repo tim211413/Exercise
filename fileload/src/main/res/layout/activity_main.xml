@@ -23,8 +23,15 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"/>
 
+    <Button
+        android:id="@+id/btn_download"
+        android:text="download"
+        android:onClick="downloadClick"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+
     <TextView
-        android:id="@+id/tv_status"
+        android:id="@+id/tv_detail"
         android:text="status"
         android:textSize="25dp"
         android:gravity="center"
@@ -36,6 +43,7 @@
         android:text="response"
         android:textSize="25dp"
         android:gravity="center"
+        android:scrollbars = "vertical"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"/>
 

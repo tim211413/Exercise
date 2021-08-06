@@ -4,7 +4,10 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
 public class SHA256 {
-    static String storeString = "";
+    public SHA256() {
+        storeString = "";
+    }
+    String storeString = "";
     static byte[] bt;
     /**
      * SHA加密
@@ -28,14 +31,14 @@ public class SHA256 {
         return strDes;
     }
 
-    public static void setSrc(String strSrc) {
+    public void setSrc(String strSrc) {
         storeString += strSrc;
     }
 
     public long getbtSize() {
         return bt.length;
     }
-    public static String shaEncryptFirst() {
+    public String shaEncryptFirst() {
 
         MessageDigest md = null;
         String strDes = null;
