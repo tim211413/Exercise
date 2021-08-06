@@ -215,14 +215,16 @@ public class MainActivity extends AppCompatActivity {
                     RequestBody requestBody = RequestBody.create(MediaType.parse("text/plain"), new String(buffer, 0, flag));
 
 
-                    while (isFinish) {
+                    while (!isFinish) {
                         Log.d("TAG", "while isFinish: " + isFinish);
-                        if (isFinish) {
+                        if (!isFinish) {
                             Log.d("TAG", "if in while isFinish1: " + isFinish);
 
                             doSomething(requestFile, requestBody);
 
                             Log.d("TAG", "if in while isFinish2: " + isFinish);
+                        } else {
+                            break;
                         }
                     }
 
