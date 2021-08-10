@@ -1,17 +1,14 @@
-package com.example.fileload;
+package com.example.fileload.model;
 
-public class ResponseInfo {
+public class ConnectResponseInfo {
     private int status;
     private int file_id;
     private int upload_maximum;
 
-    public ResponseInfo(int status, int file_id, int upload_maximum) {
+    public ConnectResponseInfo(int status, int file_id, int upload_maximum) {
         this.status = status;
         this.file_id = file_id;
         this.upload_maximum = upload_maximum;
-    }
-
-    public ResponseInfo() {
     }
 
     public int getStatus() {

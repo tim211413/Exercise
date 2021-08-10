@@ -1,4 +1,4 @@
-package com.example.fileload;
+package com.example.fileload.model;
 
 public class UploadStatus {
     private int status;

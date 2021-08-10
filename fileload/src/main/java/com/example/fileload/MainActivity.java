@@ -1,6 +1,7 @@
 package com.example.fileload;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
@@ -10,16 +11,21 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.fileload.model.ConnectRequestInfo;
+import com.example.fileload.model.ConnectResponseInfo;
+import com.example.fileload.model.DownloadInfo;
+import com.example.fileload.model.ResponseDownloadInfo;
+import com.example.fileload.model.UploadInfo;
+import com.example.fileload.model.UploadStatus;
+import com.example.fileload.util.FileUtil;
 import com.google.gson.Gson;
 
 import org.jetbrains.annotations.NotNull;
 
-import java.io.BufferedInputStream;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 
 import butterknife.BindView;
@@ -47,30 +53,31 @@ public class MainActivity extends AppCompatActivity {
     @BindView(R.id.btn_download)
     Button btn_download;
 
-    Gson gson = new Gson();
-    FileInfo fileInfo;
-    UploadInfo uploadInfo;
-    ResponseInfo responseInfo = new ResponseInfo();
+    ConnectResponseInfo connectResponseInfo;
+    ResponseDownloadInfo responseDownloadInfo;
 
-    SHA256 sha256;
-    String checksum;
-    int uploadStatus;
-    int count;
-    int file_id;
-    long fileSize;
-    int uploadMaximum;
+    FileUtil file = new FileUtil();
+    DownloadInfo downloadInfo;
+
+    Gson gson = new Gson();
+
     int times;
+    int readLength;
     String fileName;
+    String fileUrl;
     String showString = "";
-    String responseConnectionBodyString = "";
+    String responseConnectBodyString = "";
     String responseUploadBodyString = "";
-    Boolean isFinish;
+    String responseDownloadBodyString = "";
+
+    Context context;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
+        context = getApplicationContext();
 
         check();
         tv_response.setMovementMethod(new ScrollingMovementMethod());
@@ -98,142 +105,82 @@ public class MainActivity extends AppCompatActivity {
 
     @OnClick(R.id.btn_request)
     public void requestClick(View view) {
-        times = 0;
-        isFinish = false;
-
+        times = 0; // TextView 排序
         fileName = et_fileName.getText().toString();
 
-        readFileFirst(fileName);
+        if (fileName.equals("") || fileName.isEmpty()) {
+            Toast.makeText(context, "請輸入檔案名稱！", Toast.LENGTH_SHORT).show();
+        }
 
-        fileInfo = new FileInfo(fileName, fileSize, checksum);
+        connect();
 
-        fileService.connect(fileInfo)
+        et_fileName.setText("");
+    }
+    public void connect() {
+        readLength = 1024 * 1024;
+
+        ConnectRequestInfo connectRequestInfo =  file.getConnectRequestInfo(fileName, context, readLength);
+
+        fileService.connect(connectRequestInfo)
                 .observeOn(Schedulers.io())
                 .subscribeOn(Schedulers.newThread())
                 .subscribe(observerFirst);
 
-        et_fileName.setText("");
+        String requestInfo = fileName + "/" +
+                connectRequestInfo.getFile_size() + "\n" +
+                connectRequestInfo.getChecksum();
 
-        tv_detail.setText(fileName + "/" + fileSize + "\n" + checksum);
-    }
-
-    public void readFileFirst(String fileName) {
-        sha256 = new SHA256();
-
-        try (FileInputStream fin = openFileInput(fileName);
-             BufferedInputStream bufferedInputStream = new BufferedInputStream(fin)) {
-            byte[] buffer = new byte[1024 * 1024];
-
-            do {
-                int flag = bufferedInputStream.read(buffer);
-                if (flag == -1) {
-                    break;
-                } else {
-                    sha256.setSrc(new String(buffer, 0, flag));
-                }
-            } while (true);
-            checksum = sha256.shaEncryptFirst();
-            Log.d("TAG", "checksum in read " + checksum);
-            fileSize = sha256.getbtSize();
-            Log.d("TAG", "fileSize in read " + fileSize);
-
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+//        runOnUiThread(() -> tv_detail.setText(requestInfo));
+        tv_detail.setText(requestInfo);
     }
 
     Observer observerFirst = new Observer<ResponseBody>() {
         @Override
         public void onSubscribe(@NotNull Disposable d) {
-            Log.d("TAG", "onSubscribe");
+            Log.d("TAG", "Connect onSubscribe");
         }
 
         @Override
         public void onNext(@NotNull ResponseBody responseBody) {
+            Log.d("TAG", "Connect onNext");
             try {
-                responseConnectionBodyString = responseBody.string();
-                Log.d("TAG", responseConnectionBodyString);
+                responseConnectBodyString = responseBody.string();
+                //Log.d("TAG", responseConnectionBodyString);
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            showString = "connection: " + responseConnectionBodyString + "\n";
+            showString = "connection: " + responseConnectBodyString + "\n";
 
-            responseInfo = new Gson().fromJson(responseConnectionBodyString, ResponseInfo.class);
+            connectResponseInfo = new Gson().fromJson(responseConnectBodyString, ConnectResponseInfo.class);
 
-            file_id = responseInfo.getFile_id();
-            uploadMaximum = responseInfo.getUpload_maximum();
-
-            Log.d("TAG", "file_id: " + file_id);
-            Log.d("TAG", "uploadMaximum: " + uploadMaximum);
-
-            if (responseInfo.getStatus() == 0) {
-                uploadStatus = 1;
-                count = 0;
-                readFile(fileName);
+            if (connectResponseInfo.getStatus() == 0) {
+//                upload();
             }
         }
 
         @Override
         public void onError(@NotNull Throwable e) {
-            Log.d("TAG", "onError: " + e);
+            Log.d("TAG", "Connect onError: " + e);
         }
 
         @Override
         public void onComplete() {
-            Log.d("TAG", "onComplete");
+            Log.d("TAG", "Connect onComplete");
         }
+
     };
 
-    public void readFile(String fileName) {
-        try (FileInputStream fin = openFileInput(fileName);
-             BufferedInputStream bufferedInputStream = new BufferedInputStream(fin)) {
-            byte[] buffer = new byte[uploadMaximum];
-            Log.d("TAG", "uploadMaximum: " + uploadMaximum);
-            do {
-                int flag = bufferedInputStream.read(buffer);
-                if (flag == -1) {
-                    break;
-                } else {
-                    checksum = sha256.shaEncrypt(new String(buffer, 0, flag));
-//                    Log.d("TAG", "checkSum: " + checksum);
-//                    Log.d("TAG", "read word: " + new String(buffer, 0, flag));
-                    ++count;
-                    Log.d("TAG", "count = " + count);
+    public void upload() {
+        readLength = connectResponseInfo.getUpload_maximum();
 
-                    if ((fileSize / uploadMaximum) >= count) {
-                        uploadStatus = 1;
-                    } else {
-                        uploadStatus = 2;
-                    }
-                    //Log.d("TAG", "(fileSize / uploadMaximum) = " + (int)(fileSize / uploadMaximum));
+        UploadInfo uploadInfo = file.getUploadInfo(fileName, context, readLength, connectResponseInfo);
+        String readString = file.getReadString(fileName, context, readLength);
 
-                    uploadInfo = new UploadInfo(file_id, uploadStatus, checksum);
+        RequestBody requestFile = RequestBody.create(MediaType.parse("application/json"), gson.toJson(uploadInfo));
+        RequestBody requestBody = RequestBody.create(MediaType.parse("text/plain"), readString);
 
-                    RequestBody requestFile = RequestBody.create(MediaType.parse("application/json"), gson.toJson(uploadInfo));
-                    RequestBody requestBody = RequestBody.create(MediaType.parse("text/plain"), new String(buffer, 0, flag));
-
-
-                    while (!isFinish) {
-                        Log.d("TAG", "while isFinish: " + isFinish);
-                        if (!isFinish) {
-                            Log.d("TAG", "if in while isFinish1: " + isFinish);
-
-                            doSomething(requestFile, requestBody);
-
-                            Log.d("TAG", "if in while isFinish2: " + isFinish);
-                        } else {
-                            break;
-                        }
-                    }
-
-                }
-            } while (true);
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
+        if (uploadInfo.getUpload_status() == 1) {
+            doSomething(requestFile, requestBody);
         }
     }
 
@@ -245,8 +192,7 @@ public class MainActivity extends AppCompatActivity {
                 .subscribe(new Observer<ResponseBody>() {
                     @Override
                     public void onSubscribe(@NotNull Disposable d) {
-                        isFinish = false;
-                        Log.d("TAG", "onSubscribe " + isFinish);
+                        Log.d("TAG", "onSubscribe ");
                     }
 
                     @Override
@@ -258,35 +204,125 @@ public class MainActivity extends AppCompatActivity {
                             Log.d("TAG", "responseUploadBodyString: " + responseUploadBodyString);
 
                             if (uploadStatus.getStatus() == 0) {
-                                isFinish = true;
+                                upload();
+                            } else {
+
                             }
+
                             showString += times + ".upload: " + responseUploadBodyString + "\n";
                         } catch (IOException e) {
-                            isFinish = false;
                             e.printStackTrace();
                         }
-                        Log.d("TAG", "onNext " + isFinish);
+                        Log.d("TAG", "onNext ");
                     }
 
                     @Override
                     public void onError(@NotNull Throwable e) {
-                        isFinish = false;
-                        Log.d("TAG", "onError : " + e + isFinish);
+                        Log.d("TAG", "onError : " + e);
                     }
 
                     @Override
                     public void onComplete() {
                         runOnUiThread(() -> tv_response.setText(showString));
-                        Log.d("TAG", "onComplete " + isFinish);
+                        Log.d("TAG", "onComplete ");
                     }
+
                 });
     }
 
+
     @OnClick(R.id.btn_download)
     public void downloadClick(View view) {
-        fileService.downloadConnection();
+        downloadInfo = new DownloadInfo();
+        downloadInfo.setFile_id(connectResponseInfo.getFile_id());
+
+
         fileName = et_fileName.getText().toString();
-        String fileUrl = fileName;
-        fileService.download("upload\\/1\\/" + fileUrl);
+
+        if (fileName.equals("") || fileName.isEmpty()) {
+            Toast.makeText(context, "請輸入檔案名稱！", Toast.LENGTH_SHORT).show();
+        }
+
+        fileService.downloadConnection(downloadInfo)
+                .observeOn(Schedulers.io())
+                .subscribeOn(Schedulers.newThread())
+                .subscribe(downloadObserver);
+
+        fileUrl = fileName;
     }
+
+    Observer downloadObserver = new Observer<ResponseBody>() {
+        @Override
+        public void onSubscribe(@NotNull Disposable d) {
+            Log.d("TAG", "onSubscribe");
+        }
+
+        @Override
+        public void onNext(@NotNull ResponseBody responseBody) {
+            try {
+                responseDownloadBodyString = responseBody.string();
+                //Log.d("TAG", responseConnectionBodyString);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            showString = "connection: " + responseConnectBodyString + "\n";
+
+            responseDownloadInfo = new Gson().fromJson(responseDownloadBodyString, ResponseDownloadInfo.class);
+
+            if (responseDownloadInfo.getStatus() == 0) {
+                download();
+            }
+
+        }
+
+        @Override
+        public void onError(@NotNull Throwable e) {
+            Log.d("TAG", "onError: " + e);
+        }
+
+        @Override
+        public void onComplete() {
+            Log.d("TAG", "onComplete");
+        }
+
+    };
+
+    public void download() {
+        fileService.download("upload\\/1\\/" + fileUrl)
+                .observeOn(Schedulers.io())
+                .subscribeOn(Schedulers.newThread())
+                .subscribe(downloadFileObserver);
+    }
+
+    Observer downloadFileObserver = new Observer<ResponseBody>() {
+        @Override
+        public void onSubscribe(@NotNull Disposable d) {
+            Log.d("TAG", "onSubscribe");
+        }
+
+        @Override
+        public void onNext(@NotNull ResponseBody responseBody) {
+            Log.d("TAG", "onNext: ");
+//            try {
+//                File path = Environment.getExternalStorageDirectory();
+//                File file = new File(path, "file_name.jpg");
+//                FileOutputStream fileOutputStream = new FileOutputStream(file);
+//                IOUtils.write(responseBody.bytes(), fileOutputStream);
+//            }
+//            catch (Exception ex){
+//            }
+        }
+
+        @Override
+        public void onError(@NotNull Throwable e) {
+            Log.d("TAG", "onError: " + e);
+        }
+
+        @Override
+        public void onComplete() {
+            Log.d("TAG", "onComplete");
+        }
+
+    };
+
 }

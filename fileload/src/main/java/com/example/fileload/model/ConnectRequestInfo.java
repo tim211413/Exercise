@@ -1,14 +1,17 @@
-package com.example.fileload;
+package com.example.fileload.model;
 
-public class FileInfo {
+public class ConnectRequestInfo {
     private String file_name;
     private long file_size;
     private String checksum;
 
-    public FileInfo(String file_name, long file_size, String checksum) {
+    public ConnectRequestInfo(String file_name, long file_size, String checksum) {
         this.file_name = file_name;
         this.file_size = file_size;
         this.checksum = checksum;
+    }
+
+    public ConnectRequestInfo() {
     }
 
     public String getFile_name() {

@@ -1,4 +1,4 @@
-package com.example.fileload;
+package com.example.fileload.model;
 
 public class UploadInfo {
     private int file_id;
@@ -9,6 +9,9 @@ public class UploadInfo {
         this.file_id = file_id;
         this.upload_status = upload_status;
         this.checksum = checksum;
+    }
+
+    public UploadInfo() {
     }
 
     public int getFile_id() {
